@@ -1,0 +1,20 @@
+Package: impact
+Title: Conducts studies a test, control, and a treatment applied to control
+Version: 0.1.0
+Authors@R: 
+    person(given = "Rob",
+           family = "Carnell",
+           role = c("aut", "cre"),
+           email = "bertcarnell@gmail.com")
+Description: Supports statistical analysis of experiments where a test and control group are created to test one treatment at a point in time.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    testthat
+Imports:
+    assertthat,
+    boot,
+    ggplot2,
+    plyr
+RoxygenNote: 6.1.1
