@@ -13,7 +13,13 @@
 #' @importFrom plyr ddply
 #'
 #' @examples
-#' a <- 4
+#' dat <- data.frame(trt = rep(c("test","ctrl"), each = 6),
+#'                   pre_post = rep(c("pre","post"), each = 3, times = 2),
+#'                   id = as.character(c(1,2,3,1,2,3,4,5,6,4,5,6)),
+#'                   time = as.character(c(1,1,1,2,2,2,1,1,1,2,2,2)),
+#'                   val = c(10,11,12,13,14,15,10,11,10,12,10,10.5))
+#' plot_impact_data_step_change(dat)
+#' plot_impact_data_step_change(dat, type = "raw")
 plot_impact_data_step_change <- function(dat, method = "diff", type = "raw")
 {
   #method = "ratio"
