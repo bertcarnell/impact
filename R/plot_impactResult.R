@@ -3,7 +3,7 @@
 #' Plot impact Result Histogram
 #'
 #' @param x impactResult object
-#' @param ... parameters passed to stats::hist
+#' @param ... parameters passed to graphics::hist
 #'
 #' @export
 #'
@@ -16,7 +16,7 @@
 #'                   time = as.character(c(1,1,1,2,2,2,1,1,1,2,2,2)),
 #'                   val = c(10,11,12,13,14,15,10,11,10,12,10,10.5))
 #' test_result <- test_level_shift(dat, type = "group", method = "diff", R = 100)
-#' plot(test_result)
+#' plot(test_result, main = "Test Result", xlab = "Test Statistic")
 plot.impactResult <- function(x, ...)
 {
   hist(x$bootstrap_results, ...)
