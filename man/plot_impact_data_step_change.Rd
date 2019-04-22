@@ -4,7 +4,8 @@
 \alias{plot_impact_data_step_change}
 \title{Plot the impact data step change}
 \usage{
-plot_impact_data_step_change(dat, method = "diff", type = "raw")
+plot_impact_data_step_change(dat, method = "diff", type = "raw",
+  val_name = "val")
 }
 \arguments{
 \item{dat}{impact data}
@@ -12,6 +13,8 @@ plot_impact_data_step_change(dat, method = "diff", type = "raw")
 \item{method}{diff or ratio}
 
 \item{type}{raw or corrected}
+
+\item{val_name}{the name of the value column}
 }
 \value{
 ggplot2 object

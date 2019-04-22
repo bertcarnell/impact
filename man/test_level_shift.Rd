@@ -5,8 +5,8 @@
 \title{Test Level Shift in Test-Control Experiment}
 \usage{
 test_level_shift(dat, type = "group", method = "diff",
-  test_name = "test", ctrl_name = "ctrl", pre_name = "pre",
-  post_name = "post", R = 1000)
+  val_name = "val", test_name = "test", ctrl_name = "ctrl",
+  pre_name = "pre", post_name = "post", R = 1000)
 }
 \arguments{
 \item{dat}{a dataframe with columns including pre_post, time, id, trt, val}
@@ -14,6 +14,8 @@ test_level_shift(dat, type = "group", method = "diff",
 \item{type}{\code{group} for testing two groups of size m and n, \code{1-1} for testing matched pairs, \code{1-m} for testing matches between one test and m ctrl}
 
 \item{method}{\code{diff} for normalizing by the difference in test=control and \code{ratio} for normalizing by the ratio of test / control}
+
+\item{val_name}{the name the value column in the data.frame dat}
 
 \item{test_name}{the name of the test group in the trt column}
 

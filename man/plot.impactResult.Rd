@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{impactResult object}
 
-\item{...}{parameters passed to stats::hist}
+\item{...}{parameters passed to graphics::hist}
 }
 \description{
 Plot impact Result Histogram
@@ -21,5 +21,5 @@ dat <- data.frame(trt = rep(c("test","ctrl"), each = 6),
                   time = as.character(c(1,1,1,2,2,2,1,1,1,2,2,2)),
                   val = c(10,11,12,13,14,15,10,11,10,12,10,10.5))
 test_result <- test_level_shift(dat, type = "group", method = "diff", R = 100)
-plot(test_result)
+plot(test_result, main = "Test Result", xlab = "Test Statistic")
 }
