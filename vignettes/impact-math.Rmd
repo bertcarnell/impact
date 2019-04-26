@@ -1,0 +1,145 @@
+---
+title: "impact package Math"
+author: "Rob Carnell"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{impact package Math}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+Generically, we going to all the process of determining if a treatment which
+is fixed in time and applied to a treatment group is effective.
+
+Steps:
+
+- Control group selection
+- Statistical analysis
+
+## Test and Control Group Selection
+
+
+## Statistical Analysis
+
+Functions:
+
+- **Level Shift**:  Test and control groups have an average level of performance
+before and after the test which is only affected by the application of the treatment.
+- **Response Change**:  Test and control group have responses which are linearly changing
+with time where both the response level and slope with time can be affected by
+the application of the treatment.
+
+Methods:
+
+- `diff`:  A test statistic which involves the difference between the groups
+- `ratio`:  A test statistic which tests the ratio of the group responses
+
+Types:
+
+- `group`: $n$ test, $m$ ctrl
+- `1-1`: $n$ test, $n$ matched control
+- `1-m`: $n$ test, $\sum_i^n m_i$ control
+
+Tests:
+
+- Level Shift
+    - `diff`
+        - `group`: $H_o: (\mu_{post,\ trt} - \mu_{post,\ ctrl}) -(\mu_{pre,\ trt} - \mu_{pre,\ ctrl}) = 0$
+        - `1-1`: $H_o: \mu_{post,\ trt-ctrl} - \mu_{pre,\ trt-ctrl} = 0$
+        - `1-m`: $H_o: \mu_{post,\ trt-avg\ ctrl} - \mu_{pre,\ trt-avg\ ctrl} = 0$
+    - `ratio`
+        - `group`: $H_o: \mu_{post,\ trt} - \mu_{post,\ ctrl} \frac{\mu_{pre,\ trt}}{\mu_{pre,\ ctrl}} = 0$
+        - `1-1`: $H_o: \mu_{post,\ trt/ctrl} - \mu_{pre,\ trt/ctrl} = 0$
+        - `1-m`: $H_o: \mu_{post,\ trt/avg\ ctrl} - \mu_{pre,\ trt/avg\ ctrl} = 0$
+- Response Change
+    - variables:
+       - $x_1$ is 0 for `pre` and 1 for `post`
+       - $x_2$ is 0 for `ctrl` and 1 for `test`
+       - $t$ is time
+    - `diff`: 
+        - `group`: $H_o: \beta_6 + \beta_7 t = 0$
+            - model: $Y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 t + \beta_4 x_1 t + \beta_5 x_2 t + \beta_6 x_1 x_2 + \beta_7 x_1 x_2 t + \alpha_{id,\ trt} + \epsilon$
+        - `1-1`: $H_o: \beta_1 + \beta_3 t = 0$ 
+            - model: $Y_{trt} - Y_{ctrl} = \beta_0 + \beta_1 x_1 + \beta_2 t + \beta_3 x_1 t + \alpha_{id} + \epsilon$
+        - `1-m`: $H_o: \beta_1 + \beta_3 t = 0$ 
+            - model: $Y_{trt} - \bar{Y}_{ctrl|trt} = \beta_0 + \beta_1 x_1 + \beta_2 t + \beta_3 x_1 t + \alpha_{id} +\epsilon$
+    - `ratio` with $y > 0$:
+        - `group`: $H_o: \beta_6 + \beta_7 t = 0$
+            - model: $ln(Y) = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 t + \beta_4 x_1 t + \beta_5 x_2 t + \beta_6 x_1 x_2 + \beta_7 x_1 x_2 t + \alpha_{id,\ trt} + \epsilon$
+        - `1-1`: $H_o: \beta_1 + \beta_3 t = 0$ 
+            - model: $ln\left(\frac{Y_{trt}}{Y_{ctrl}}\right) = \beta_0 + \beta_1 x_1 + \beta_2 t + \beta_3 x_1 t + \alpha_{id} + \epsilon$
+        - `1-m`: $H_o: \beta_1 + \beta_3 t = 0$ 
+            - model: $ln\left(\frac{Y_{trt}}{\bar{Y}_{ctrl|trt}}\right) = \beta_0 + \beta_1 x_1 + \beta_2 t + \beta_3 x_1 t + \alpha_{id} + \epsilon$
+
+Test Statistics:
+
+- variables:
+    - $i$ unit, $n$ test and $m$ ctrl, $z$ unit of test in `1-m` option
+    - $j$ time period, $u$ pre and $w$ post
+    - $k$ = pre / post
+    - $l$ = trt / ctrl
+    - $\hat{\gamma}$ represents the estimated test statistic
+    
+
+- Level Shift
+    - `diff`
+        - `group`: $\displaystyle \hat{\gamma} = \left[ \frac{1}{w} \sum_j \left( \frac{1}{n} \sum_i x_{i,j,post,trt} \right) - \frac{1}{w} \sum_j \left(\frac{1}{m}\sum_i x_{i,j,post,ctrl} \right)\right] - \left[ \frac{1}{u} \sum_j \left( \frac{1}{n} \sum_i x_{i,j,pre,trt} \right) - \frac{1}{u} \sum_j \left(\frac{1}{m}\sum_i x_{i,j,pre,ctrl} \right)\right]$
+            - $E(\hat{\gamma}) = (\mu_{post,\ trt} - \mu_{post,\ ctrl}) -(\mu_{pre,\ trt} - \mu_{pre,\ ctrl}) = \gamma$
+        - `1-1`: $\displaystyle \hat{\gamma} = \frac{1}{w}\sum_j\frac{1}{n}\sum_i (x_{i,j,post,trt} - x_{i,j,post,ctrl}) - \frac{1}{u}\sum_j\frac{1}{n}\sum_i (x_{i,j,pre,trt} - x_{i,j,pre,ctrl})$
+            - $E(\hat{\gamma}) = (\mu_{post,\ trt} - \mu_{post,\ ctrl}) -(\mu_{pre,\ trt} - \mu_{pre,\ ctrl}) = \gamma$
+        - `1-m`: $\displaystyle \hat{\gamma} = \frac{1}{w}\sum_j\frac{1}{n}\sum_i\left(x_{i,j,post,trt} - \frac{1}{m_i}\sum_z x_{i,j,post,ctrl,z} \right) - \frac{1}{u}\sum_j\frac{1}{n}\sum_i\left(x_{i,j,pre,trt} - \frac{1}{m_i}\sum_z x_{i,j,pre,ctrl,z} \right)$
+            - $E(\hat{\gamma}) = (\mu_{post,\ trt} - \mu_{post,\ ctrl}) -(\mu_{pre,\ trt} - \mu_{pre,\ ctrl}) = \gamma$
+    - `ratio`
+        - `group`: $\displaystyle \hat{\gamma} = \frac{1}{w} \sum_j \left( \frac{1}{n} \sum_i x_{i,j,post,trt} \right) - \frac{1}{w} \sum_j \left(\frac{1}{m}\sum_i x_{i,j,post,ctrl} \right) \frac{\frac{1}{u} \sum_j \left( \frac{1}{n} \sum_i x_{i,j,pre,trt} \right)}{\frac{1}{u} \sum_j \left(\frac{1}{m}\sum_i x_{i,j,pre,ctrl} \right)}$
+            - $E(\hat{\gamma}) \neq \gamma$
+        - `1-1`: $\displaystyle \hat{\gamma} = \frac{1}{w}\sum_j\frac{1}{n}\sum_i \frac{x_{i,j,post,trt}}{x_{i,j,post,ctrl}} - \frac{1}{u}\sum_j\frac{1}{n}\sum_i \frac{x_{i,j,pre,trt}}{x_{i,j,pre,ctrl}}$
+            - $E(\hat{\gamma}) \neq \gamma$
+        - `1-m`: $\displaystyle \hat{\gamma} = \frac{1}{w}\sum_j\frac{1}{n}\sum_i \frac{x_{i,j,post,trt}}{\frac{1}{m_i}\sum_z x_{i,j,post,ctrl,z}} - \frac{1}{u}\sum_j\frac{1}{n}\sum_i \frac{x_{i,j,pre,trt}}{\frac{1}{m_i}\sum_z x_{i,j,pre,ctrl,z}}$
+
+- Response Change
+            - $E(\hat{\gamma}) \neq \gamma$
+    - `diff`
+        - `group`: $\hat{\gamma} = \hat{\beta_6} + \hat{\beta_7} t$
+        - `1-1`: $\hat{\gamma} = \hat{\beta_1} + \hat{\beta_3} t$
+        - `1-m`: $\hat{\gamma} = \hat{\beta_1} + \hat{\beta_3} t$
+    - `ratio`
+        - `group`: $\hat{\gamma} = \hat{\beta_6} + \hat{\beta_7} t$
+        - `1-1`: $\hat{\gamma} = \hat{\beta_1} + \hat{\beta_3} t$
+        - `1-m`: $\hat{\gamma} = \hat{\beta_1} + \hat{\beta_3} t$
+
+## Apendix:  Proofs
+
+### Response Change
+
+#### Diff
+
+$$y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 t + \beta_4 x_1 t + \beta_5 x_2 t + \beta_6 x_1 x_2 + \beta_7 x_1 x_2 t$$
+
+$$(y_{post,trt} - y_{post,ctrl}) - (y_{pre,trt} - y_{pre,ctrl}) = 0$$
+
+$$\gamma = \left((\beta_0 + \beta_1 + \beta_2 + \beta_3 t + \beta_4 t + \beta_5 + \beta_6 + \beta_7 t) - (\beta_0 + \beta_1 + \beta_3 t + \beta_4 t)\right) - \left((\beta_0 + \beta_2 + \beta_3 t + \beta_5 t) - (\beta_0 + \beta_3 t)\right)$$
+
+$$\gamma = \beta_6 + \beta_7 t = 0$$
+
+#### Ratio
+
+$$ln(y) = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 t + \beta_4 x_1 t + \beta_5 x_2 t + \beta_6 x_1 x_2 + \beta_7 x_1 x_2 t$$
+
+$$y_{post,trt} - y_{post,ctrl} \frac{y_{pre,trt}}{y_{pre,ctrl}} = 0$$
+$$\frac{y_{post,trt}}{y_{post,ctrl}} \frac{y_{pre,ctrl}}{y_{pre,trt}} = 1$$
+$$\gamma = \frac{e^{\beta_0 + \beta_1 + \beta_2 + \beta_3 t + \beta_4 t + \beta_5 + \beta_6 + \beta_7 t}}{e^{\beta_0 + \beta_1 + \beta_3 t + \beta_4 t}} \frac{e^{\beta_0 + \beta_2 + \beta_3 t + \beta_5 t}}{e^{\beta_0 + \beta_3 t}} = 1$$
+
+$$\gamma = e^{\beta_6 + \beta_7 t} = 1$$
+
+$$\gamma = \beta_6 + \beta_7 t = 0$$
+
