@@ -18,6 +18,8 @@ Imports:
     assertthat,
     boot,
     ggplot2,
-    plyr
+    plyr,
+    lme4,
+    multcomp
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr

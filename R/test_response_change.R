@@ -1,18 +1,31 @@
 # Copyright 2019 Robert Carnell
 
-require(lm4)
-require(multcomp)
-require(stats)
-require(boot)
-require(plyr)
-
+# default formula
 .defaultFormula <- formula(val ~ pre_post * trt * numtime)
+.defaultFormula1_1 <- formula(val ~ pre_post * numtime)
 
+# bootstrap function model for groups
+#
+# boot_dat = bootstrap ids
+# i = the bootstrap sample
+# full_dat = the full data set
+# method = diff or ratio
+# val_name = name of the value column
+# pre_name = name of the pre-period
+# post_name = name of the post period
+# test_name = name of the test treatment
+# ctrl_name = name of the control treatment
+# test_formula = formula for the test
+# test_time = time at which to test the hypothesis
+#
+# return = bootstrap sample results
 .boot_func_group_mean_model <- function(boot_dat, i, full_dat, method,
                                         val_name, pre_name, post_name,
                                         test_name, ctrl_name, test_formula,
                                         test_time)
 {
+  beta6 <- paste0("pre_post", post_name, ":trt", test_name)
+  beta7 <- paste0(beta6, ":numtime")
   int_dat <- NULL
   for (j in i)
   {
@@ -28,24 +41,50 @@ require(plyr)
   lm2_boot <- stats::lm(update(test_formula, val ~ . - pre_post:trt:numtime), data = int_dat)
   # don't need to bootstrap the mixed model because the parameter estimates are the same.
   #   The variance is what is different
-  ind_lm <- c(which(names(coef(lm1_boot)) == "pre_postpost:trttest"),
-              which(names(coef(lm1_boot)) == "pre_postpost:trttest:numtime"))
-  #ind_lm <- which(names(coef(lm1_boot)) %in% c("pre_postpost:trttest",
-  #                                     "pre_postpost:trttest:numtime"))
-  ind_lm1 <- which(names(coef(lm1_boot)) == "pre_postpost:trttest:numtime")
-  ind_lm2 <- which(names(coef(lm2_boot)) == "pre_postpost:trttest")
+  names_coef_lm1_boot <- names(coef(lm1_boot))
+  ind_lm <- c(which(names_coef_lm1_boot == beta6),
+              which(names_coef_lm1_boot == beta7))
+  ind_lm1 <- which(names_coef_lm1_boot == beta7)
+  ind_lm2 <- which(names(coef(lm2_boot)) == beta6)
 
-  # scale the parameters by the time and sumt them
-  return(c("pre_postpost:trttest:numtime" = coef(lm1_boot)[ind_lm1],
-           "pre_postpost:trttest+pre_postpost:trttest:numtime" = sum(coef(lm1_boot)[ind_lm]*c(1, test_time)),
-           "pre_postpost:trttest" = coef(lm2_boot)[ind_lm2]))
+  # scale the parameters by the time and sum them
+  ret <- c(coef(lm1_boot)[ind_lm1],
+           sum(coef(lm1_boot)[ind_lm]*c(1, test_time)),
+           coef(lm2_boot)[ind_lm2])
+  names(ret) <- c(beta7, paste0(beta6, "+", beta7, "*numtime"), beta6)
+  return(ret)
 }
 
+#' Test a change in response between test and control
+#'
+#' @inheritParams test_level_shift
+#' @param test_formula the formula to be used to conduct the test
+#' @param test_time the time at which to conduct the test
+#'
+#' @return impactResult object
+#' @export
+#'
+#' @importFrom lme4 lmer
+#' @importFrom multcomp glht
+#' @importFrom stats lm
+#' @importFrom stats quantile
+#' @importFrom boot boot
+#' @importFrom plyr ddply
+#' @importFrom assertthat assert_that
+#'
+#' @examples
+#' set.seed(1976)
+#'  dat <- data.frame(trt = rep(c("test","ctrl"), each = 12),
+#'                    pre_post = rep(c("pre","post"), each = 6, times = 2),
+#'                    id = c(rep(c("1","2","3"), times = 4), rep(c("4","5","6"), times = 4)),
+#'                    time = rep(1:4, each = 3, times = 2),
+#'                    val = rnorm(24, mean = 10, sd = 5))
+#' test_result <- test_response_change(dat, R = 100)
 test_response_change <- function(dat, type = "group", method = "diff",
                                  val_name = "val",
                                  test_name = "test", ctrl_name = "ctrl",
                                  pre_name = "pre", post_name = "post",
-                                 test_formula = .defaultFormula,
+                                 test_formula = ifelse(type == "group", .defaultFormula, .defaultFormula1_1),
                                  test_time = NA,
                                  R = 1000)
 {
@@ -64,8 +103,20 @@ test_response_change <- function(dat, type = "group", method = "diff",
                           msg = "The type variable must be one of group, 1-1, or 1-m")
   assertthat::assert_that(method %in% c("diff", "ratio"),
                           msg = "The method variable must be either diff or ratio")
+  assertthat::assert_that(!(method == "ratio" & all(dat[[val_name]] > 0)),
+                          msg = "If the ratio method is selected then the values must be strictly positive")
 
-  dat$val <- dat[[val_name]]
+  # normalize the val_name to make the formula writing easier
+  if (!("val" %in% names(dat)))
+  {
+    dat$val <- dat[[val_name]]
+  }
+  # if the ratio method is specified, then log the values (values are tested to be positive)
+  if (method == "ratio")
+  {
+    dat$val <- log(dat$val)
+  }
+  # name the date numeric
   dat$numtime <- as.numeric(dat$time)
   if (is.na(test_time))
   {
@@ -80,21 +131,66 @@ test_response_change <- function(dat, type = "group", method = "diff",
     dat$pre_post <- factor(as.character(dat$pre_post), levels = c(pre_name, post_name))
   }
 
+  # fit linear models
   lm1 <- stats::lm(test_formula, data = dat)
-  lm2 <- stats::lm(update(test_formula, val ~ . - pre_post:trt:numtime), data = dat)
+  if (type == "group")
+  {
+    lm2 <- stats::lm(update(test_formula, val ~ . - pre_post:trt:numtime), data = dat)
+  } else
+  {
+    lm2 <- stats::lm(update(test_formula, val ~ . - pre_post:numtime), data = dat)
+  }
+  # check for NA coefficients meaning there is not enough data
+  if (any(is.na(lm1)))
+  {
+    stop("Insufficient data to fit the requested model.  Consider using another method")
+  }
   # add a random effect of id nested within treatment
-  lmer1 <- lme4::lmer(update(test_formula, ~ . + (trt | id)), data = dat)
-  K <- matrix(0, nrow = 2, ncol = length(coef(lm1)))
-  K[1, names(coef(lm1)) == "pre_postpost:trttest:numtime"] <- 1 # not test time
-  K[2, names(coef(lm1)) == "pre_postpost:trttest"] <- 1
-  K[2, names(coef(lm1)) == "pre_postpost:trttest:numtime"] <- test_time
-  K2 <- matrix(0, nrow = 1, ncol = length(coef(lm2)))
-  K2[1, names(coef(lm2)) == "pre_postpost:trttest"] <- 1
-  rownames(K) <- c("pre_postpost:trttest:numtime",
-                   "pre_postpost:trttest+pre_postpost:trttest:numtime*time")
-  rownames(K2) <- c("pre_postpost:trttest")
+  #   if there are not enough observations to next id within treatment, then
+  #   this can fail
+  bUseMixed <- FALSE
+  tryCatch({
+    lmer1 <- lme4::lmer(update(test_formula, ~ . + (trt | id)), data = dat)
+    if (any(lmer1@optinfo$conv$lme4$message == "singular fit"))
+    {
+      cat("Mixed model not used\n")
+    } else {
+      bUseMixed <- TRUE
+    }
+  }, error = function(e) {cat("Mixed Model not used\n")})
+  # create linear combinations of variables
+  names_coef_lm1 <- names(coef(lm1))
+  if (type == "group")
+  {
+    beta6 <- paste0("pre_post", post_name, ":trt", test_name)
+    beta7 <- paste0(beta6, ":numtime")
+    K <- matrix(0, nrow = 2, ncol = length(coef(lm1)))
+    K[1, names_coef_lm1 == beta7] <- 1 # not test time
+    K[2, names_coef_lm1 == beta6] <- 1
+    K[2, names_coef_lm1 == beta7] <- test_time
+    K2 <- matrix(0, nrow = 1, ncol = length(coef(lm2)))
+    K2[1, names(coef(lm2)) == beta6] <- 1
+    rownames(K) <- c(beta7,
+                     paste0(beta6, "+", beta7, "*numtime"))
+    rownames(K2) <- beta6
+  } else {
+    beta1 <- paste0("pre_post", post_name)
+    beta3 <- paste0(beta1, ":numtime")
+    K <- matrix(0, nrow = 2, ncol = length(coef(lm1)))
+    K[1, names_coef_lm1 == beta3] <- 1 # not test time
+    K[2, names_coef_lm1 == beta1] <- 1
+    K[2, names_coef_lm1 == beta3] <- test_time
+    K2 <- matrix(0, nrow = 1, ncol = length(coef(lm2)))
+    K2[1, names(coef(lm2)) == beta1] <- 1
+    rownames(K) <- c(beta3,
+                     paste0(beta1, "+", beta3, "*numtime"))
+    rownames(K2) <- beta1
+  }
   glht1 <- multcomp::glht(lm1, linfct = K)
-  glmmht1 <- multcomp::glht(lmer1, linfct = K)
+  if (bUseMixed)
+  {
+    glmmht1 <- multcomp::glht(lmer1, linfct = K)
+  }
   glht2 <- multcomp::glht(lm2, linfct = K2)
 
   # now bootstrap the test statistic
@@ -110,25 +206,42 @@ test_response_change <- function(dat, type = "group", method = "diff",
                      pre_name = pre_name, post_name = post_name,
                      test_name = test_name, ctrl_name = ctrl_name,
                      test_formula = test_formula, test_time = test_time)
+  } else
+  {
+    stop("not implemented")
   }
 
   # first test pre_post:trt:time
   #  if significant, then test pre_post:trt:time + pre_post:trt
   #  if not significant, then test pre_post:trt
-  ret <- list(result = c(apply(glht1$linfct %*% matrix(glht1$coef, ncol = 1), 1, sum),
-                         sum(glht2$linfct * glht2$coef)),
+  resultVector <- c(apply(glht1$linfct %*% matrix(glht1$coef, ncol = 1), 1, sum),
+                    sum(glht2$linfct * glht2$coef))
+  if (type == "group")
+  {
+    names(resultVector) <- c(beta7,
+                             paste0(beta6, "+", beta7, "*numtime"),
+                             beta6)
+  } else {
+    stop("not implemented")
+  }
+  resultInterval <- apply(b1$t, 2, stats::quantile, probs = c(0.025, 0.975))
+  colnames(resultInterval) <- names(resultVector)
+  resultPvalue <- apply(b1$t, 2, function(x) length(which(x < 0)) / length(x))
+  names(resultPvalue) <- names(resultVector)
+
+  ret <- list(result = resultVector,
               bootstrap_mean = b1$t0,
               bootstrap_results = b1$t,
-              bootstrap_interval = apply(b1$t, 2, stats::quantile, probs = c(0.025, 0.975)),
-              pvalue = apply(b1$t, 2, function(x) length(which(x < 0)) / length(x)),
+              bootstrap_interval = resultInterval,
+              pvalue = resultPvalue,
               type = type,
               method = method,
               model = lm1,
-              mixed_model = lmer1,
+              mixed_model = ifelse(bUseMixed, lmer1, NA),
               glht = glht1,
-              mixed_glht = glmmht1
+              mixed_glht = ifelse(bUseMixed, glmmht1, NA)
   )
+
   class(ret) <- "impactResult"
   return(ret)
 }
-

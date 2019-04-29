@@ -19,9 +19,19 @@
 print.impactResult <- function(x, ...)
 {
   cat("Impact Analysis Result\n")
+  if (length(x$result) > 1)
+  {
+    cat("  Effect Names: ", names(x$result), "\n")
+  }
   cat("  Effect: ", x$result, "\n")
   cat("  Bootstrap Mean: ", x$bootstrap_mean, "\n")
-  cat("  Confidence Interval:", x$bootstrap_interval, "\n")
+  if (length(x$result) > 1)
+  {
+    cat("  Confidence Interval:", x$bootstrap_interval[1,], "\n")
+    cat("                      ", x$bootstrap_interval[2,], "\n")
+  } else {
+    cat("  Confidence Interval:", x$bootstrap_interval, "\n")
+  }
   cat("  Method: ", x$method, "\n")
   cat("  Type: ", x$type, "\n\n")
 }

@@ -66,6 +66,8 @@ Tests:
        - $x_1$ is 0 for `pre` and 1 for `post`
        - $x_2$ is 0 for `ctrl` and 1 for `test`
        - $t$ is time
+       - $E(\epsilon) = 0$ and $V(\epsilon) = \sigma^2_{error}$
+       - $E(\alpha) = 0$ and $V(\alpha) = \sigma^2_{between\ id}$
     - `diff`: 
         - `group`: $H_o: \beta_6 + \beta_7 t = 0$
             - model: $Y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 t + \beta_4 x_1 t + \beta_5 x_2 t + \beta_6 x_1 x_2 + \beta_7 x_1 x_2 t + \alpha_{id,\ trt} + \epsilon$

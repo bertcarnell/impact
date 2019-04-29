@@ -8,4 +8,15 @@ test_that("plot impact result works", {
                    val = c(10,11,12,13,14,15,10,11,10,12,10,10.5))
   test_result <- test_level_shift(dat, type = "group", method = "diff", R = 100)
   expect_silent(plot(test_result, main = "Test Result", xlab = "Test Statistic"))
+
+  test_result <- test_level_shift(dat, type = "group", method = "ratio", R = 100)
+  expect_silent(plot(test_result, main = "Test Result", xlab = "Test Statistic"))
+
+  # test are in the matchid
+  dat$matchid <- factor(c(1,2,3,1,2,3,1,2,3,1,2,3))
+  test_result <- test_level_shift(dat, type = "1-1", method = "diff", R = 100)
+  expect_silent(plot(test_result, main = "Test Result", xlab = "Test Statistic"))
+
+  test_result <- test_level_shift(dat, type = "1-1", method = "ratio", R = 100)
+  expect_silent(plot(test_result, main = "Test Result", xlab = "Test Statistic"))
 })
