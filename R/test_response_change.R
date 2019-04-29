@@ -58,7 +58,6 @@
 #' Test a change in response between test and control
 #'
 #' @inheritParams test_level_shift
-#' @param test_formula the formula to be used to conduct the test
 #' @param test_time the time at which to conduct the test
 #'
 #' @return impactResult object
@@ -84,7 +83,6 @@ test_response_change <- function(dat, type = "group", method = "diff",
                                  val_name = "val",
                                  test_name = "test", ctrl_name = "ctrl",
                                  pre_name = "pre", post_name = "post",
-                                 test_formula = ifelse(type == "group", .defaultFormula, .defaultFormula1_1),
                                  test_time = NA,
                                  R = 1000)
 {
@@ -96,7 +94,6 @@ test_response_change <- function(dat, type = "group", method = "diff",
   # post_name = "post"
   # val_name = "val"
   # R = 100
-  # test_formula = .defaultFormula
 
   validate_impact_data(dat)
   assertthat::assert_that(type %in% c("group", "1-1", "1-m"),
@@ -106,6 +103,13 @@ test_response_change <- function(dat, type = "group", method = "diff",
   assertthat::assert_that(!(method == "ratio" & all(dat[[val_name]] > 0)),
                           msg = "If the ratio method is selected then the values must be strictly positive")
 
+  if (type == "group")
+  {
+    test_formula <- .defaultFormula
+  } else
+  {
+    test_formula <- .defaultFormula1_1
+  }
   # normalize the val_name to make the formula writing easier
   if (!("val" %in% names(dat)))
   {
@@ -228,6 +232,15 @@ test_response_change <- function(dat, type = "group", method = "diff",
   colnames(resultInterval) <- names(resultVector)
   resultPvalue <- apply(b1$t, 2, function(x) length(which(x < 0)) / length(x))
   names(resultPvalue) <- names(resultVector)
+  # can't use ifelse on a S4 object
+  if (bUseMixed)
+  {
+    mixed_model_return <- lmer1
+    mixed_glht_return <- glmmht1
+  } else {
+    mixed_model_return <- NA
+    mixed_glht_return <- NA
+  }
 
   ret <- list(result = resultVector,
               bootstrap_mean = b1$t0,
@@ -237,9 +250,9 @@ test_response_change <- function(dat, type = "group", method = "diff",
               type = type,
               method = method,
               model = lm1,
-              mixed_model = ifelse(bUseMixed, lmer1, NA),
+              mixed_model = mixed_model_return,
               glht = glht1,
-              mixed_glht = ifelse(bUseMixed, glmmht1, NA)
+              mixed_glht = mixed_glht_return
   )
 
   class(ret) <- "impactResult"

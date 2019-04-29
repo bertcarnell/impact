@@ -6,9 +6,7 @@
 \usage{
 test_response_change(dat, type = "group", method = "diff",
   val_name = "val", test_name = "test", ctrl_name = "ctrl",
-  pre_name = "pre", post_name = "post", test_formula = ifelse(type ==
-  "group", .defaultFormula, .defaultFormula1_1), test_time = NA,
-  R = 1000)
+  pre_name = "pre", post_name = "post", test_time = NA, R = 1000)
 }
 \arguments{
 \item{dat}{a dataframe with columns including pre_post, time, id, trt, val}
@@ -26,8 +24,6 @@ test_response_change(dat, type = "group", method = "diff",
 \item{pre_name}{the name of the pre time period in the pre_post column}
 
 \item{post_name}{the name of the post time period in the pre_post column}
-
-\item{test_formula}{the formula to be used to conduct the test}
 
 \item{test_time}{the time at which to conduct the test}
 
