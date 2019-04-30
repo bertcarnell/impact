@@ -55,6 +55,43 @@
   return(ret)
 }
 
+.boot_func_1_1_model <- function(boot_dat, i, full_dat, method,
+                                 val_name, pre_name, post_name,
+                                 test_name, ctrl_name, test_formula,
+                                 test_time)
+{
+  beta1 <- paste0("pre_post", post_name)
+  beta3 <- paste0(beta1, ":numtime")
+  int_dat <- NULL
+  for (j in i)
+  {
+    # this is highly memory intensive - would be better to do with sequential means
+    #  The time steps makes it hard
+    # would normally use subset here but for R CMD check
+    ind <- with(full_dat, id == boot_dat$id[j])
+    int_dat <- rbind(int_dat, full_dat[ind,])
+  }
+
+  # bootstrap the linear model
+  lm1_boot <- stats::lm(test_formula, data = int_dat)
+  lm2_boot <- stats::lm(update(test_formula, val ~ . - pre_post:trt:numtime), data = int_dat)
+  # don't need to bootstrap the mixed model because the parameter estimates are the same.
+  #   The variance is what is different
+  names_coef_lm1_boot <- names(coef(lm1_boot))
+  ind_lm <- c(which(names_coef_lm1_boot == beta1),
+              which(names_coef_lm1_boot == beta3))
+  ind_lm1 <- which(names_coef_lm1_boot == beta3)
+  ind_lm2 <- which(names(coef(lm2_boot)) == beta1)
+
+  # scale the parameters by the time and sum them
+  ret <- c(coef(lm1_boot)[ind_lm1],
+           sum(coef(lm1_boot)[ind_lm]*c(1, test_time)),
+           coef(lm2_boot)[ind_lm2])
+  names(ret) <- c(beta3, paste0(beta1, "+", beta3, "*numtime"), beta1)
+  return(ret)
+}
+
+
 #' Test a change in response between test and control
 #'
 #' @inheritParams test_level_shift
@@ -135,6 +172,30 @@ test_response_change <- function(dat, type = "group", method = "diff",
     dat$pre_post <- factor(as.character(dat$pre_post), levels = c(pre_name, post_name))
   }
 
+  if (type == "1-1")
+  {
+    assertthat::assert_that("matchid" %in% names(dat),
+                            msg = "the input data.frame must contain a matchid column for the 1-1 type")
+    ind_ctrl <- which(dat$trt == ctrl_name)
+    ind_test <- which(dat$trt == test_name)
+    temp <- merge(dat[ind_ctrl,], dat[ind_test,],
+                  by.x = c("pre_post","numtime","matchid"),
+                  by.y = c("pre_post","numtime","id"))
+
+    if (method == "diff")
+    {
+      temp$val <- temp[[paste0(val_name, ".y")]] - temp[[paste0(val_name, ".x")]]
+    } else
+    {
+      temp$val <- temp[[paste0(val_name, ".y")]] / temp[[paste0(val_name, ".x")]]
+    }
+    dat <- temp
+
+  } else if (type == "1-m")
+  {
+    stop("not implemented")
+  }
+
   # fit linear models
   lm1 <- stats::lm(test_formula, data = dat)
   if (type == "group")
@@ -210,9 +271,15 @@ test_response_change <- function(dat, type = "group", method = "diff",
                      pre_name = pre_name, post_name = post_name,
                      test_name = test_name, ctrl_name = ctrl_name,
                      test_formula = test_formula, test_time = test_time)
-  } else
+  } else # 1-1 and 1-m
   {
-    stop("not implemented")
+    boot_dat <- data.frame(id = unique(dat$id))
+    b1 <- boot::boot(boot_dat, .boot_func_1_1_model, R = R,
+                     stype = "i",
+                     full_dat = dat, method = method, val_name = val_name,
+                     pre_name = pre_name, post_name = post_name,
+                     test_name = test_name, ctrl_name = ctrl_name,
+                     test_formula = test_formula, test_time = test_time)
   }
 
   # first test pre_post:trt:time
@@ -226,7 +293,9 @@ test_response_change <- function(dat, type = "group", method = "diff",
                              paste0(beta6, "+", beta7, "*numtime"),
                              beta6)
   } else {
-    stop("not implemented")
+    names(resultVector) <- c(beta3,
+                             paste0(beta1, "+", beta3, "*numtime"),
+                             beta1)
   }
   resultInterval <- apply(b1$t, 2, stats::quantile, probs = c(0.025, 0.975))
   colnames(resultInterval) <- names(resultVector)
