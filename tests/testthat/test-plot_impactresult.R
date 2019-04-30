@@ -7,16 +7,17 @@ test_that("plot impact result works", {
                    time = as.character(c(1,1,1,2,2,2,1,1,1,2,2,2)),
                    val = c(10,11,12,13,14,15,10,11,10,12,10,10.5))
   test_result <- test_level_shift(dat, type = "group", method = "diff", R = 100)
-  expect_silent(plot(test_result, main = "Test Result", xlab = "Test Statistic"))
+  g <- plot(test_result)
+  expect_silent(g + xlab("Test Statistic") + ggtitle("Test Result"))
 
   test_result <- test_level_shift(dat, type = "group", method = "ratio", R = 100)
-  expect_silent(plot(test_result, main = "Test Result", xlab = "Test Statistic"))
+  expect_silent(plot(test_result) + xlab("Test Statistic") + ggtitle("Test Result"))
 
   # test are in the matchid
   dat$matchid <- factor(c(1,2,3,1,2,3,1,2,3,1,2,3))
   test_result <- test_level_shift(dat, type = "1-1", method = "diff", R = 100)
-  expect_silent(plot(test_result, main = "Test Result", xlab = "Test Statistic"))
+  expect_silent(plot(test_result) + xlab("Test Statistic") + ggtitle("Test Result"))
 
   test_result <- test_level_shift(dat, type = "1-1", method = "ratio", R = 100)
-  expect_silent(plot(test_result, main = "Test Result", xlab = "Test Statistic"))
+  expect_silent(plot(test_result) + xlab("Test Statistic") + ggtitle("Test Result"))
 })

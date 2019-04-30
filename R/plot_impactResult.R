@@ -3,11 +3,11 @@
 #' Plot impact Result Histogram
 #'
 #' @param x impactResult object
-#' @param ... parameters passed to graphics::hist
+#' @param ... future parameters passed to internal functions
 #'
 #' @export
 #'
-#' @importFrom graphics hist abline
+#' @import ggplot2
 #'
 #' @examples
 #' dat <- data.frame(trt = rep(c("test","ctrl"), each = 6),
@@ -19,6 +19,20 @@
 #' plot(test_result, main = "Test Result", xlab = "Test Statistic")
 plot.impactResult <- function(x, ...)
 {
-  hist(x$bootstrap_results, ...)
-  abline(v = 0, col = "red", lwd = 2)
+  mybins <- max(min(nrow(x$bootstrap_results) * 20 / 100, 100), 10)
+  if (ncol(x$bootstrap_results) > 1)
+  {
+    df <- data.frame(x = c(x$bootstrap_results),
+                     nam = rep(names(x$result), each = nrow(x$bootstrap_results)))
+    g <- ggplot(df, aes(x = x, group = nam)) +
+      geom_histogram(bins = mybins) +
+      facet_wrap(. ~ nam, scales = "free_x") +
+      geom_vline(xintercept = 0, col = "red")
+  } else {
+    df <- data.frame(x = c(x$bootstrap_results))
+    g <- ggplot(df, aes(x = x)) +
+      geom_histogram(bins = mybins) +
+      geom_vline(xintercept = 0, col = "red")
+  }
+  return(g)
 }

@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{impactResult object}
 
-\item{...}{parameters passed to graphics::hist}
+\item{...}{future parameters passed to internal functions}
 }
 \description{
 Plot impact Result Histogram
