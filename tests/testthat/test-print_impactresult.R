@@ -1,3 +1,5 @@
+# Copyright 2019 Robert Carnell
+
 context("test-print_impactresult")
 
 test_that("print is called for an impact result", {

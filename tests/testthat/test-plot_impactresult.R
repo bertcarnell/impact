@@ -1,3 +1,5 @@
+# Copyright 2019 Robert Carnell
+
 context("test-plot_impactresult")
 
 test_that("plot impact result works", {

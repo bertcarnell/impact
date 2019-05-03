@@ -1,3 +1,5 @@
+# Copyright 2019 Robert Carnell
+
 context("test-validate_impact_data")
 
 test_that("Validate works", {

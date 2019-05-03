@@ -1,5 +1,5 @@
 ---
-title: "impact package Math"
+title: "impact Package Math"
 author: "Rob Carnell"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -8,6 +8,7 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
+<!-- Copyright 2019 Robert Carnell -->
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(

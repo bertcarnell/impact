@@ -1,3 +1,5 @@
+# Copyright 2019 Robert Carnell
+
 context("test-plot_impact_data_step_change")
 
 test_that("plot is generated", {
