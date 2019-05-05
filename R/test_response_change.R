@@ -38,23 +38,38 @@
 
   # bootstrap the linear model
   lm1_boot <- stats::lm(test_formula, data = int_dat)
-  lm2_boot <- stats::lm(update(test_formula, val ~ . - pre_post:trt:numtime), data = int_dat)
+  lm2_boot <- stats::lm(stats::update(test_formula, val ~ . - pre_post:trt:numtime), data = int_dat)
   # don't need to bootstrap the mixed model because the parameter estimates are the same.
   #   The variance is what is different
-  names_coef_lm1_boot <- names(coef(lm1_boot))
+  names_coef_lm1_boot <- names(stats::coef(lm1_boot))
   ind_lm <- c(which(names_coef_lm1_boot == beta6),
               which(names_coef_lm1_boot == beta7))
   ind_lm1 <- which(names_coef_lm1_boot == beta7)
-  ind_lm2 <- which(names(coef(lm2_boot)) == beta6)
+  ind_lm2 <- which(names(stats::coef(lm2_boot)) == beta6)
 
   # scale the parameters by the time and sum them
-  ret <- c(coef(lm1_boot)[ind_lm1],
-           sum(coef(lm1_boot)[ind_lm]*c(1, test_time)),
-           coef(lm2_boot)[ind_lm2])
+  ret <- c(stats::coef(lm1_boot)[ind_lm1],
+           sum(stats::coef(lm1_boot)[ind_lm]*c(1, test_time)),
+           stats::coef(lm2_boot)[ind_lm2])
   names(ret) <- c(beta7, paste0(beta6, "+", beta7, "*numtime"), beta6)
   return(ret)
 }
 
+# bootstrap function model for 1-1 matches
+#
+# boot_dat = bootstrap ids
+# i = the bootstrap sample
+# full_dat = the full data set
+# method = diff or ratio
+# val_name = name of the value column
+# pre_name = name of the pre-period
+# post_name = name of the post period
+# test_name = name of the test treatment
+# ctrl_name = name of the control treatment
+# test_formula = formula for the test
+# test_time = time at which to test the hypothesis
+#
+# return = bootstrap sample results
 .boot_func_1_1_model <- function(boot_dat, i, full_dat, method,
                                  val_name, pre_name, post_name,
                                  test_name, ctrl_name, test_formula,
@@ -74,19 +89,19 @@
 
   # bootstrap the linear model
   lm1_boot <- stats::lm(test_formula, data = int_dat)
-  lm2_boot <- stats::lm(update(test_formula, val ~ . - pre_post:trt:numtime), data = int_dat)
+  lm2_boot <- stats::lm(stats::update(test_formula, val ~ . - pre_post:trt:numtime), data = int_dat)
   # don't need to bootstrap the mixed model because the parameter estimates are the same.
   #   The variance is what is different
   names_coef_lm1_boot <- names(coef(lm1_boot))
   ind_lm <- c(which(names_coef_lm1_boot == beta1),
               which(names_coef_lm1_boot == beta3))
   ind_lm1 <- which(names_coef_lm1_boot == beta3)
-  ind_lm2 <- which(names(coef(lm2_boot)) == beta1)
+  ind_lm2 <- which(names(stats::coef(lm2_boot)) == beta1)
 
   # scale the parameters by the time and sum them
-  ret <- c(coef(lm1_boot)[ind_lm1],
-           sum(coef(lm1_boot)[ind_lm]*c(1, test_time)),
-           coef(lm2_boot)[ind_lm2])
+  ret <- c(stats::coef(lm1_boot)[ind_lm1],
+           sum(stats::coef(lm1_boot)[ind_lm]*c(1, test_time)),
+           stats::coef(lm2_boot)[ind_lm2])
   names(ret) <- c(beta3, paste0(beta1, "+", beta3, "*numtime"), beta1)
   return(ret)
 }
@@ -103,7 +118,7 @@
 #' @importFrom lme4 lmer
 #' @importFrom multcomp glht
 #' @importFrom stats lm
-#' @importFrom stats quantile
+#' @importFrom stats quantile update coef
 #' @importFrom boot boot
 #' @importFrom plyr ddply
 #' @importFrom assertthat assert_that
@@ -200,10 +215,10 @@ test_response_change <- function(dat, type = "group", method = "diff",
   lm1 <- stats::lm(test_formula, data = dat)
   if (type == "group")
   {
-    lm2 <- stats::lm(update(test_formula, val ~ . - pre_post:trt:numtime), data = dat)
+    lm2 <- stats::lm(stats::update(test_formula, val ~ . - pre_post:trt:numtime), data = dat)
   } else
   {
-    lm2 <- stats::lm(update(test_formula, val ~ . - pre_post:numtime), data = dat)
+    lm2 <- stats::lm(stats::update(test_formula, val ~ . - pre_post:numtime), data = dat)
   }
   # check for NA coefficients meaning there is not enough data
   if (any(is.na(lm1)))
@@ -216,7 +231,7 @@ test_response_change <- function(dat, type = "group", method = "diff",
   bUseMixed <- FALSE
   tryCatch({
     # supress messages about the fit and catch warnings and errors
-    suppressMessages(lmer1 <- lme4::lmer(update(test_formula, ~ . + (trt | id)), data = dat))
+    suppressMessages(lmer1 <- lme4::lmer(stats::update(test_formula, ~ . + (trt | id)), data = dat))
     if (any(grepl("singular", lmer1@optinfo$conv$lme4$message)))
     {
       cat("Mixed model not used\n")
@@ -226,29 +241,29 @@ test_response_change <- function(dat, type = "group", method = "diff",
   }, error = function(e) {cat("Mixed Model not used\n")},
   warning = function(w) {cat("Mixed Model not used\n")})
   # create linear combinations of variables
-  names_coef_lm1 <- names(coef(lm1))
+  names_coef_lm1 <- names(stats::coef(lm1))
   if (type == "group")
   {
     beta6 <- paste0("pre_post", post_name, ":trt", test_name)
     beta7 <- paste0(beta6, ":numtime")
-    K <- matrix(0, nrow = 2, ncol = length(coef(lm1)))
+    K <- matrix(0, nrow = 2, ncol = length(stats::coef(lm1)))
     K[1, names_coef_lm1 == beta7] <- 1 # not test time
     K[2, names_coef_lm1 == beta6] <- 1
     K[2, names_coef_lm1 == beta7] <- test_time
-    K2 <- matrix(0, nrow = 1, ncol = length(coef(lm2)))
-    K2[1, names(coef(lm2)) == beta6] <- 1
+    K2 <- matrix(0, nrow = 1, ncol = length(stats::coef(lm2)))
+    K2[1, names(stats::coef(lm2)) == beta6] <- 1
     rownames(K) <- c(beta7,
                      paste0(beta6, "+", beta7, "*numtime"))
     rownames(K2) <- beta6
   } else {
     beta1 <- paste0("pre_post", post_name)
     beta3 <- paste0(beta1, ":numtime")
-    K <- matrix(0, nrow = 2, ncol = length(coef(lm1)))
+    K <- matrix(0, nrow = 2, ncol = length(stats::coef(lm1)))
     K[1, names_coef_lm1 == beta3] <- 1 # not test time
     K[2, names_coef_lm1 == beta1] <- 1
     K[2, names_coef_lm1 == beta3] <- test_time
-    K2 <- matrix(0, nrow = 1, ncol = length(coef(lm2)))
-    K2[1, names(coef(lm2)) == beta1] <- 1
+    K2 <- matrix(0, nrow = 1, ncol = length(stats::coef(lm2)))
+    K2[1, names(stats::coef(lm2)) == beta1] <- 1
     rownames(K) <- c(beta3,
                      paste0(beta1, "+", beta3, "*numtime"))
     rownames(K2) <- beta1

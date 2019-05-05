@@ -9,6 +9,7 @@
 #' @export
 #'
 #' @importFrom assertthat assert_that
+#' @importFrom stats var
 #'
 #' @examples
 #'  df <- data.frame(id = factor(LETTERS),
@@ -43,7 +44,7 @@ summary.matchedTestCtrl <- function(object, ...)
       test_stat <- object$data[object$cases,-1] / object$data[object$controls, -1]
     }
     me <- apply(test_stat, 2, mean)
-    s <- apply(test_stat, 2, var)
+    s <- apply(test_stat, 2, stats::var)
     n <- length(object$cases)
     m <- length(object$controls)
   } else if (object$type == "1-m")
@@ -60,7 +61,7 @@ summary.matchedTestCtrl <- function(object, ...)
         t(sapply(object$controls, function(x) apply(object$data[x,-1], 2, mean)))
     }
     me <- apply(test_stat, 2, mean)
-    s <- apply(test_stat, 2, var)
+    s <- apply(test_stat, 2, stats::var)
     n <- length(object$cases)
     m <- length(object$controls[[1]])
   } else if (object$type == "group")
@@ -69,8 +70,8 @@ summary.matchedTestCtrl <- function(object, ...)
     {
       test_stat <- apply(object$data[object$cases,-1], 2, mean) -
         apply(object$data[object$controls,-1], 2, mean)
-      test_stat_var <- apply(object$data[object$cases,-1], 2, var) +
-        apply(object$data[object$controls,-1], 2, var)
+      test_stat_var <- apply(object$data[object$cases,-1], 2, stats::var) +
+        apply(object$data[object$controls,-1], 2, stats::var)
     } else
     {
       test_stat <- apply(object$data[object$cases,-1], 2, mean) /

@@ -24,13 +24,13 @@ plot.impactResult <- function(x, ...)
   {
     df <- data.frame(x = c(x$bootstrap_results),
                      nam = rep(names(x$result), each = nrow(x$bootstrap_results)))
-    g <- ggplot(df, aes(x = x, group = nam)) +
+    g <- ggplot(df, aes_string(x = "x", group = "nam")) +
       geom_histogram(bins = mybins) +
       facet_wrap(. ~ nam, scales = "free_x") +
       geom_vline(xintercept = 0, col = "red")
   } else {
     df <- data.frame(x = c(x$bootstrap_results))
-    g <- ggplot(df, aes(x = x)) +
+    g <- ggplot(df, aes_string(x = "x")) +
       geom_histogram(bins = mybins) +
       geom_vline(xintercept = 0, col = "red")
   }

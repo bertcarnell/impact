@@ -27,7 +27,7 @@
 #' @export
 #'
 #' @importFrom cluster daisy
-#' @importFrom stats as.dist model.frame
+#' @importFrom stats as.dist model.frame na.fail
 #'
 #' @examples
 #' set.seed(123)
@@ -77,7 +77,7 @@ match_test_ctrl <- function(cluster_formula, data,
     stop("Not implemented yet")
 
   model_frame <- stats::model.frame(cluster_formula, data = data, subset = NULL,
-                                    na.action = na.fail,
+                                    na.action = stats::na.fail,
                                     drop.unused.levels = FALSE,
                                     xlev = NULL)
 

@@ -9,7 +9,7 @@
 #' @export
 #'
 #' @import ggplot2
-#' @importFrom stats prcomp
+#' @importFrom stats prcomp predict
 #'
 #' @examples
 #' df <- data.frame(id = factor(LETTERS),
@@ -36,7 +36,7 @@ plot.matchedTestCtrl <- function(x, ...)
 {
   # find the principle components of the data minus the first column of trt-ctrl
   temp_prcomp <- stats::prcomp(x$data[,-1], scale = TRUE)
-  temp_df <- as.data.frame(predict(temp_prcomp))
+  temp_df <- as.data.frame(stats::predict(temp_prcomp))
 
   temp_df$unit <- "unmatched"
   temp_df$unit[x$cases] <- "trt"
@@ -58,9 +58,9 @@ plot.matchedTestCtrl <- function(x, ...)
       yend = temp_df$PC2[x$controls]
     )
 
-    g <- ggplot(temp_df, aes(x = PC1, y = PC2, col = unit)) +
+    g <- ggplot(temp_df, aes_string(x = "PC1", y = "PC2", col = "unit")) +
            geom_point() +
-           geom_segment(aes(x = x, y = y, xend = xend, yend = yend),
+           geom_segment(aes_string(x = "x", y = "y", xend = "xend", yend = "yend"),
                         data = temp_lines,
                         col = "black", lty = 2)
   } else if (x$type == "1-m")
@@ -72,8 +72,8 @@ plot.matchedTestCtrl <- function(x, ...)
       yend = temp_df$PC2[unlist(x$controls)]
     )
 
-    g <- ggplot(temp_df, aes(x = PC1, y = PC2, col = unit)) + geom_point() +
-           geom_segment(aes(x = x, y = y, xend = xend, yend = yend),
+    g <- ggplot(temp_df, aes_string(x = "PC1", y = "PC2", col = "unit")) + geom_point() +
+           geom_segment(aes_string(x = "x", y = "y", xend = "xend", yend = "yend"),
                         data = temp_lines,
                         col = "black", lty = 2)
   } else if (x$type == "group")
@@ -87,9 +87,9 @@ plot.matchedTestCtrl <- function(x, ...)
                             pch = c(1, 1)
     )
 
-    g <- ggplot(temp_df, aes(x = PC1, y = PC2, col = unit)) +
+    g <- ggplot(temp_df, aes_string(x = "PC1", y = "PC2", col = "unit")) +
            geom_point() +
-           geom_point(aes(x = x, y = y, col = unit), size = temp_mean$size,
+           geom_point(aes_string(x = "x", y = "y", col = "unit"), size = temp_mean$size,
                       pch = temp_mean$pch,
                       data = temp_mean)
 
