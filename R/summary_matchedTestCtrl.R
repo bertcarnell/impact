@@ -36,7 +36,7 @@ summary.matchedTestCtrl <- function(object, ...)
   {
     assertthat::assert_that(length(object$cases) == length(object$controls),
                             msg = "matchedTestCtrl object of type 1-1 with length of test not equal to the length of controls")
-    if (object$type == "diff")
+    if (object$method == "diff")
     {
       test_stat <- object$data[object$cases,-1] - object$data[object$controls, -1]
     } else
@@ -51,7 +51,7 @@ summary.matchedTestCtrl <- function(object, ...)
   {
     assertthat::assert_that(length(object$cases) == length(object$controls),
                             msg = "matchedTestCtrl object of type 1-1 with length of test not equal to the length of controls")
-    if (object$type == "diff")
+    if (object$method == "diff")
     {
       test_stat <- object$data[object$cases,-1] -
         t(sapply(object$controls, function(x) apply(object$data[x,-1], 2, mean)))
@@ -66,7 +66,7 @@ summary.matchedTestCtrl <- function(object, ...)
     m <- length(object$controls[[1]])
   } else if (object$type == "group")
   {
-    if (object$type == "diff")
+    if (object$method == "diff")
     {
       test_stat <- apply(object$data[object$cases,-1], 2, mean) -
         apply(object$data[object$controls,-1], 2, mean)
@@ -91,6 +91,7 @@ summary.matchedTestCtrl <- function(object, ...)
   cat("  Test Cases:     ", n, "\n")
   cat("  Control Cases:  ", m, "\n")
   cat("  Type:           ", object$type, "\n")
+  cat("  Method:         ", object$method, "\n")
   cat("\n  Means:\n")
   print(me)
   cat("\n  Standard Deviations: \n")
