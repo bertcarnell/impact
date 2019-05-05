@@ -18,6 +18,7 @@ Suggests:
 Imports:
     assertthat,
     boot,
+    cluster,
     ggplot2,
     plyr,
     lme4,
