@@ -137,7 +137,7 @@ test_response_change <- function(dat, type = "group", method = "diff",
                           msg = "The type variable must be one of group, 1-1, or 1-m")
   assertthat::assert_that(method %in% c("diff", "ratio"),
                           msg = "The method variable must be either diff or ratio")
-  assertthat::assert_that(!(method == "ratio" & all(dat[[val_name]] > 0)),
+  assertthat::assert_that(!(method == "ratio" & any(dat[[val_name]] <= 0)),
                           msg = "If the ratio method is selected then the values must be strictly positive")
 
   if (type == "group")
@@ -215,14 +215,16 @@ test_response_change <- function(dat, type = "group", method = "diff",
   #   this can fail
   bUseMixed <- FALSE
   tryCatch({
-    lmer1 <- lme4::lmer(update(test_formula, ~ . + (trt | id)), data = dat)
-    if (any(lmer1@optinfo$conv$lme4$message == "singular fit"))
+    # supress messages about the fit and catch warnings and errors
+    suppressMessages(lmer1 <- lme4::lmer(update(test_formula, ~ . + (trt | id)), data = dat))
+    if (any(grepl("singular", lmer1@optinfo$conv$lme4$message)))
     {
       cat("Mixed model not used\n")
     } else {
       bUseMixed <- TRUE
     }
-  }, error = function(e) {cat("Mixed Model not used\n")})
+  }, error = function(e) {cat("Mixed Model not used\n")},
+  warning = function(w) {cat("Mixed Model not used\n")})
   # create linear combinations of variables
   names_coef_lm1 <- names(coef(lm1))
   if (type == "group")

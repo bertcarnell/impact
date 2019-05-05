@@ -1,3 +1,5 @@
+# Copyright 2019 Robert Carnell
+
 context("test-plot_matchedtestctrl")
 
 test_that("plot types work", {

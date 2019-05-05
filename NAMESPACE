@@ -3,6 +3,7 @@
 S3method(plot,impactResult)
 S3method(plot,matchedTestCtrl)
 S3method(print,impactResult)
+S3method(summary,matchedTestCtrl)
 export(match_test_ctrl)
 export(plot_impact_data_step_change)
 export(test_level_shift)
