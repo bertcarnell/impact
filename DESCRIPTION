@@ -1,5 +1,5 @@
 Package: impact
-Title: Conducts studies a test, control, and a treatment applied to control
+Title: Conducts studies with a test, control, and a treatment applied to control
 Version: 0.1.0
 Authors@R: 
     person(given = "Rob",
