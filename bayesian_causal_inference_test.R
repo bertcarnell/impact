@@ -10,7 +10,7 @@ effect <- 30
 y_0 <- 1 + 3*x1 + 2*x2 + e
 y_1 <- 1 + 3*x1 + 2*x2 + effect + e
 w <- rbinom(N, size = 1, prob = 0.5)
-y <- w*y_1 + (1-w)*y_0
+y <- w*y_1 + (1 - w)*y_0
 X <- as.matrix(cbind(rep(1,N), x1, x2))
 # separate
 y_1_obs <- y[w == 1]
@@ -122,7 +122,7 @@ fit1 <- stan(model_code = stan_char_string, data = test_data,
 print(fit1, pars = c("beta_1","beta_0","sigma_1","sigma_0"))
 plot(fit1, pars = c("beta_1","beta_0","sigma_1","sigma_0"), ci_level = 0.5, 
      outer_level = 0.95)
-plot(fit1, plotfun="trace", pars = c("beta_1","beta_0","sigma_1","sigma_0"))
+plot(fit1, plotfun = "trace", pars = c("beta_1","beta_0","sigma_1","sigma_0"))
 
 temp <- as.array(fit1)
 ind1 <- which(grepl("y_1", dimnames(temp)$parameters))
@@ -133,7 +133,7 @@ hist(tau)
 # take the mean over the chains and interations assuming we have covered the population of X
 tau_m <- apply(tau, 3, mean)
 mean(tau_m)
-quantile(tau_m, probs=c(0.025, .975))
+quantile(tau_m, probs = c(0.025, .975))
 
 
 # for the print method...
@@ -226,17 +226,17 @@ fit1 <- stan(model_code = stan_char_string, data = test_data,
 print(fit1, pars = c("beta_1","beta_0","sigma_1","sigma_0"))
 plot(fit1, pars = c("beta_1","beta_0","sigma_1","sigma_0"), ci_level = 0.5, 
      outer_level = 0.95)
-plot(fit1, plotfun="trace", pars = c("beta_1","beta_0","sigma_1","sigma_0"))
+plot(fit1, plotfun = "trace", pars = c("beta_1","beta_0","sigma_1","sigma_0"))
 
 temp <- as.array(fit1)
 ind0 <- which(grepl("y_mod[[].*[,]1[]]", dimnames(temp)$parameters))
 ind1 <- which(grepl("y_mod[[].*[,]2[]]", dimnames(temp)$parameters))
-hist(y_0[w==0])
-hist(temp[,,ind0[w==0]]) # get y0 observed
-hist(temp[,,ind0[w==1]]) # get y0 missing
-hist(y_1[w==1])
-hist(temp[,,ind1[w==1]]) # get y0 observed
-hist(temp[,,ind1[w==0]]) # get y0 missing
+hist(y_0[w == 0])
+hist(temp[,,ind0[w == 0]]) # get y0 observed
+hist(temp[,,ind0[w == 1]]) # get y0 missing
+hist(y_1[w == 1])
+hist(temp[,,ind1[w == 1]]) # get y0 observed
+hist(temp[,,ind1[w == 0]]) # get y0 missing
 
 # construct the almost-PATE hypothesis metric
 tau_apate <- temp[,,ind1] - temp[,,ind0]
@@ -244,15 +244,15 @@ hist(tau_apate)
 # take the mean over the chains and interations assuming we have covered the population of X
 tau_m <- apply(tau_apate, 3, mean)
 mean(tau_m)
-quantile(tau_m, probs=c(0.025, .975))
+quantile(tau_m, probs = c(0.025, .975))
 
 # constuct the SATE
-mean((y - apply(temp[,,ind0], 3, mean))*w + (apply(temp[,,ind1], 3, mean) - y)*(1-w))
+mean((y - apply(temp[,,ind0], 3, mean))*w + (apply(temp[,,ind1], 3, mean) - y)*(1 - w))
 
 #
 y_1_pred <- test_data$X %*% apply(temp[,,1:3], 3, mean)
 y_0_pred <- test_data$X %*% apply(temp[,,4:6], 3, mean)
-y_pred <- y_0_pred*(1-w) + y_1_pred*w
+y_pred <- y_0_pred*(1 - w) + y_1_pred*w
 
 df <- data.frame(y = y,
                  x1 = x1,
@@ -300,11 +300,11 @@ N <- 100
 x1 <- rnorm(N, 0, 1)
 x2 <- rnorm(N, 1, 2)
 e <- rnorm(N, 0, 2)
-effect <- 5
+effect <- 2
 y_0 <- round(plogis(-2 + 3*x1 + 2*x2 + e))
 y_1 <- round(plogis(-2 + 3*x1 + 2*x2 + effect + e))
 w <- rbinom(N, size = 1, prob = 0.5)
-y <- w*y_1 + (1-w)*y_0
+y <- w*y_1 + (1 - w)*y_0
 X <- as.matrix(cbind(rep(1,N), x1, x2))
 # separate
 y_1_obs <- y[w == 1]
@@ -333,14 +333,13 @@ test_data <- list(
   beta_0_prior_mean = beta_0_prior_mean,
   beta_0_prior_sd = beta_0_prior_sd
 )
-test_data$rho <- 0.1
 test_data$X <- X
 test_data$w <- w
 test_data$y <- as.integer(y)
 test_data$i_1_obs <- which(w == 1)
 test_data$i_0_obs <- which(w == 0)
 test_data$y_1 <- as.integer(y*w)
-test_data$y_0 <- as.integer(y*(1-w))
+test_data$y_0 <- as.integer(y*(1 - w))
 
 stan_char_string <- "
 data {
@@ -420,7 +419,7 @@ hist(c(tau_apate_a, tau_apate_b))
 # take the mean over the chains and interations assuming we have covered the population of X
 tau_m <- c(apply(tau_apate_a, 3, mean), apply(tau_apate_b, 3, mean))
 mean(tau_m)
-quantile(tau_m, probs=c(0.025, .975))
+quantile(tau_m, probs = c(0.025, .975))
 
 # constuct the SATE
 mean(c((y_1_obs - apply(temp[,,ind0miss], 3, mean)), (apply(temp[,,ind1miss], 3, mean) - y_0_obs)))
