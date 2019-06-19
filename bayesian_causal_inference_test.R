@@ -114,13 +114,13 @@ model {
 #Sys.setenv(PATH = paste("C:/Rtools/bin", Sys.getenv("PATH"), sep=";"))
 #Sys.setenv(BINPREF = "C:/Rtools/mingw_64/bin")
 
-fit1 <- stan(model_code = stan_char_string, data = test_data, 
-             pars = c("beta_1","beta_0","sigma_1","sigma_0","y_1","y_0"), 
-             iter = 2000, warmup = 1000, 
+fit1 <- stan(model_code = stan_char_string, data = test_data,
+             pars = c("beta_1","beta_0","sigma_1","sigma_0","y_1","y_0"),
+             iter = 2000, warmup = 1000,
              chains = 2, cores = 2)
 
 print(fit1, pars = c("beta_1","beta_0","sigma_1","sigma_0"))
-plot(fit1, pars = c("beta_1","beta_0","sigma_1","sigma_0"), ci_level = 0.5, 
+plot(fit1, pars = c("beta_1","beta_0","sigma_1","sigma_0"), ci_level = 0.5,
      outer_level = 0.95)
 plot(fit1, plotfun = "trace", pars = c("beta_1","beta_0","sigma_1","sigma_0"))
 
@@ -193,7 +193,7 @@ transformed parameters {
   sigma[2,2] = square(sigma_1);
   sigma[1,2] = sigma_0 * sigma_1 * rho;
   sigma[2,1] = sigma_1 * sigma_0 * rho;
-  
+
   mu = X * beta;
   y_mod[,1] = y .* (1-w);
   y_mod[,2] = y .* w;
@@ -218,13 +218,13 @@ model {
 #Sys.setenv(PATH = paste("C:/Rtools/bin", Sys.getenv("PATH"), sep=";"))
 #Sys.setenv(BINPREF = "C:/Rtools/mingw_64/bin")
 
-fit1 <- stan(model_code = stan_char_string, data = test_data, 
-             pars = c("beta_1","beta_0","sigma_1","sigma_0","y_mod"), 
-             iter = 2000, warmup = 1000, 
+fit1 <- stan(model_code = stan_char_string, data = test_data,
+             pars = c("beta_1","beta_0","sigma_1","sigma_0","y_mod"),
+             iter = 2000, warmup = 1000,
              chains = 2, cores = 2)
 
 print(fit1, pars = c("beta_1","beta_0","sigma_1","sigma_0"))
-plot(fit1, pars = c("beta_1","beta_0","sigma_1","sigma_0"), ci_level = 0.5, 
+plot(fit1, pars = c("beta_1","beta_0","sigma_1","sigma_0"), ci_level = 0.5,
      outer_level = 0.95)
 plot(fit1, plotfun = "trace", pars = c("beta_1","beta_0","sigma_1","sigma_0"))
 
@@ -263,33 +263,33 @@ df <- data.frame(y = y,
                  w = factor(w))
 
 df_x1 <- data.frame(x1 = seq(-3, 3, length = N))
-df_x1$y1 <- cbind(rep(1,N), 
-                  seq(-3, 3, length = N), 
+df_x1$y1 <- cbind(rep(1,N),
+                  seq(-3, 3, length = N),
                   mean(df$x2)) %*% apply(temp[,,1:3], 3, mean)
-df_x1$y0 <- cbind(rep(1,N), 
-                  seq(-3, 3, length = N), 
+df_x1$y0 <- cbind(rep(1,N),
+                  seq(-3, 3, length = N),
                   mean(df$x2)) %*% apply(temp[,,4:6], 3, mean)
 
 df_x2 <- data.frame(x2 = seq(-3.5, 5.5, length = N))
-df_x2$y1 <- cbind(rep(1,N), 
-                  mean(df$x1), 
+df_x2$y1 <- cbind(rep(1,N),
+                  mean(df$x1),
                   seq(-3.5, 5.5, length = N)) %*% apply(temp[,,1:3], 3, mean)
-df_x2$y0 <- cbind(rep(1,N), 
-                  mean(df$x1), 
+df_x2$y0 <- cbind(rep(1,N),
+                  mean(df$x1),
                   seq(-3.5, 5.5, length = N)) %*% apply(temp[,,4:6], 3, mean)
 
-ggplot(df, aes(x = y, y = resid, group = w, col = w)) + 
+ggplot(df, aes(x = y, y = resid, group = w, col = w)) +
   geom_point()
-ggplot(df, aes(x = x1, y = y, group = w, col = w)) + 
+ggplot(df, aes(x = x1, y = y, group = w, col = w)) +
   geom_point() +
   geom_line(aes(x = x1, y = y1), df_x1, col = "black") +
   geom_line(aes(x = x1, y = y0), df_x1, col = "black")
-ggplot(df, aes(x = x2, y = y, group = w, col = w)) + 
+ggplot(df, aes(x = x2, y = y, group = w, col = w)) +
   geom_point() +
   geom_line(aes(x = x2, y = y1), df_x2, col = "black") +
   geom_line(aes(x = x2, y = y0), df_x2, col = "black")
-ggplot(df, aes(sample = resid)) + 
-  geom_qq(distribution = stats::qnorm) + 
+ggplot(df, aes(sample = resid)) +
+  geom_qq(distribution = stats::qnorm) +
   geom_qq_line(distribution = stats::qnorm)
 
 ################################################################################
@@ -300,7 +300,7 @@ N <- 100
 x1 <- rnorm(N, 0, 1)
 x2 <- rnorm(N, 1, 2)
 e <- rnorm(N, 0, 2)
-effect <- 2
+effect <- 10
 y_0 <- round(plogis(-2 + 3*x1 + 2*x2 + e))
 y_1 <- round(plogis(-2 + 3*x1 + 2*x2 + effect + e))
 w <- rbinom(N, size = 1, prob = 0.5)
@@ -399,9 +399,9 @@ generated quantities {
   }
 }"
 
-fit1 <- stan(model_code = stan_char_string, data = test_data, 
-             pars = c("beta_1","beta_0", "y_0_miss", "y_1_miss", "y_0", "y_1"), 
-             iter = 2000, warmup = 1000, 
+fit1 <- stan(model_code = stan_char_string, data = test_data,
+             pars = c("beta_1","beta_0", "y_0_miss", "y_1_miss", "y_0", "y_1"),
+             iter = 2000, warmup = 1000,
              chains = 2, cores = 2)
 
 print(fit1, pars = c("beta_1","beta_0"))
@@ -423,3 +423,436 @@ quantile(tau_m, probs = c(0.025, .975))
 
 # constuct the SATE
 mean(c((y_1_obs - apply(temp[,,ind0miss], 3, mean)), (apply(temp[,,ind1miss], 3, mean) - y_0_obs)))
+
+################################################################################
+
+set.seed(1234)
+Npre <- 3
+Npost <- 4
+Nctrl <- 10
+Ntest <- 12
+y_0_ctrl_pre <- rnorm(Npre*Nctrl, 1, 1)
+y_0_ctrl_post <- rnorm(Npost*Nctrl, 2, 1)
+y_0_test_pre <- rnorm(Npre*Ntest, 0, 1)
+y_1_test_post <- rnorm(Npost*Ntest, 3, 1)
+
+stan_data <- list(
+  Npre = Npre,
+  Npost = Npost,
+  Nctrl = Nctrl,
+  Ntest = Ntest,
+  y_0_ctrl_pre = y_0_ctrl_pre,
+  y_0_ctrl_post = y_0_ctrl_post,
+  y_0_test_pre = y_0_test_pre,
+  y_1_test_post = y_1_test_post
+)
+
+stan_char_string <- "
+data {
+  int<lower=1> Npre;
+  int<lower=1> Npost;
+  int<lower=1> Nctrl;
+  int<lower=1> Ntest;
+  vector[Npre*Nctrl] y_0_ctrl_pre;
+  vector[Npre*Ntest] y_0_test_pre;
+  vector[Npost*Nctrl] y_0_ctrl_post;
+  vector[Npost*Ntest] y_1_test_post;
+}
+parameters {
+  real mu_0_ctrl_pre;
+  real mu_0_test_pre;
+  real mu_0_ctrl_post;
+  real mu_1_test_post;
+  real<lower=0> sigma_ctrl;
+  real<lower=0> sigma_test_pre;
+  real<lower=0> sigma_test_post;
+  vector[Npost*Ntest] y_0_test_post_miss;
+}
+transformed parameters {
+  real mu_0_test_post_miss;
+  mu_0_test_post_miss = mu_0_test_pre + (mu_0_ctrl_post - mu_0_ctrl_pre);
+}
+model {
+  // constant priors
+  y_0_ctrl_pre ~ normal(mu_0_ctrl_pre, sigma_ctrl);
+  y_0_test_pre ~ normal(mu_0_test_pre, sigma_test_pre);
+  y_0_ctrl_post ~ normal(mu_0_ctrl_post, sigma_ctrl);
+  y_1_test_post ~ normal(mu_1_test_post, sigma_test_post);
+  y_0_test_post_miss ~ normal(mu_0_test_post_miss, sigma_test_pre);
+}
+"
+
+fit1 <- stan(model_code = stan_char_string, data = stan_data,
+             pars = c("mu_0_ctrl_pre","mu_0_test_pre", "mu_0_ctrl_post",
+                      "mu_1_test_post", "mu_0_test_post_miss",
+                      "y_0_test_post_miss",
+                      "sigma_ctrl", "sigma_test_pre", "sigma_test_post"),
+             iter = 2000, warmup = 1000,
+             chains = 2, cores = 2)
+
+print(fit1, pars = c("mu_0_ctrl_pre","mu_0_test_pre", "mu_0_ctrl_post",
+                     "mu_1_test_post", "mu_0_test_post_miss",
+                     "sigma_ctrl", "sigma_test_pre", "sigma_test_post"))
+
+plot(fit1, pars = c("mu_0_ctrl_pre","mu_0_test_pre", "mu_0_ctrl_post",
+                     "mu_1_test_post", "mu_0_test_post_miss",
+                     "sigma_ctrl", "sigma_test_pre", "sigma_test_post"),
+     ci_level = 0.5, outer_level = 0.95)
+
+set.seed(1234)
+Npre <- 8
+Npost <- 16
+Nctrl <- 10
+Ntest <- 12
+y_0_ctrl_pre <- rnorm(Npre*Nctrl, 1, 1)
+y_0_ctrl_post <- rnorm(Npost*Nctrl, 2, 1)
+y_0_test_pre <- rnorm(Npre*Ntest, 0, 1)
+y_1_test_post <- rnorm(Npost*Ntest, 3, 1)
+
+set.seed(1000)
+y_0_ctrl_pre <- matrix(y_0_ctrl_pre, nrow = Npre, ncol = Nctrl)
+y_0_ctrl_post <- matrix(y_0_ctrl_post, nrow = Npost, ncol = Nctrl)
+y_0_test_pre <- matrix(y_0_test_pre, nrow = Npre, ncol = Ntest)
+y_1_test_post <- matrix(y_1_test_post, nrow = Npost, ncol = Ntest)
+ar1_beta <- 0.6
+
+for (i in 2:Npre)
+{
+  for (j in 1:Nctrl)
+  {
+    y_0_ctrl_pre[i, j] <- y_0_ctrl_pre[i - 1, j] * ar1_beta + rnorm(1, 1, 1)
+  }
+}
+for (i in 2:Npost)
+{
+  for (j in 1:Nctrl)
+  {
+    y_0_ctrl_post[i, j] <- y_0_ctrl_post[i - 1, j] * ar1_beta + rnorm(1, 2, 1)
+  }
+}
+for (i in 2:Npre)
+{
+  for (j in 1:Ntest)
+  {
+    y_0_test_pre[i, j] <- y_0_test_pre[i - 1, j] * ar1_beta + rnorm(1, 0, 1)
+  }
+}
+for (i in 2:Npost)
+{
+  for (j in 1:Ntest)
+  {
+    y_1_test_post[i, j] <- y_1_test_post[i - 1, j] * ar1_beta + rnorm(1, 3, 1)
+  }
+}
+
+stan_data <- list(
+  Npre = Npre,
+  Npost = Npost,
+  Nctrl = Nctrl,
+  Ntest = Ntest,
+  y_0_ctrl_pre = matrix(y_0_ctrl_pre, nrow = Npre, ncol = Nctrl),
+  y_0_ctrl_post = matrix(y_0_ctrl_post, nrow = Npost, ncol = Nctrl),
+  y_0_test_pre = matrix(y_0_test_pre, nrow = Npre, ncol = Ntest),
+  y_1_test_post = matrix(y_1_test_post, nrow = Npost, ncol = Ntest)
+)
+
+stan_char_string <- "
+data {
+  int<lower=1> Npre;
+  int<lower=1> Npost;
+  int<lower=1> Nctrl;
+  int<lower=1> Ntest;
+  matrix[Npre,Nctrl] y_0_ctrl_pre;
+  matrix[Npre,Ntest] y_0_test_pre;
+  matrix[Npost,Nctrl] y_0_ctrl_post;
+  matrix[Npost,Ntest] y_1_test_post;
+}
+parameters {
+  real mu_0_ctrl_pre;
+  real mu_0_test_pre;
+  real mu_0_ctrl_post;
+  real mu_1_test_post;
+  real<lower=0> sigma_ctrl;
+  real<lower=0> sigma_test_pre;
+  real<lower=0> sigma_test_post;
+  matrix[Npost,Ntest] y_0_test_post_miss;
+  matrix[Npost,Nctrl] y_1_ctrl_post_miss;
+  real<lower=-1, upper=1> ar1_beta;
+}
+transformed parameters {
+  real mu_0_test_post_miss;
+  real mu_1_ctrl_post_miss;
+  mu_0_test_post_miss = mu_0_test_pre + (mu_0_ctrl_post - mu_0_ctrl_pre);
+  mu_1_ctrl_post_miss = mu_0_ctrl_pre + (mu_1_test_post - mu_0_test_pre);
+}
+model {
+  ar1_beta ~ normal(0, 0.4); // want a stationary beta between -1 and 1
+  // constant priors on others
+  for (i in 1:Nctrl){
+    for (j in 2:Npre){
+      y_0_ctrl_pre[j,i] ~ normal(mu_0_ctrl_pre + ar1_beta*y_0_ctrl_pre[j-1,i], sigma_ctrl);
+    }
+  }
+  for (i in 1:Nctrl){
+    y_0_ctrl_post[1,i] ~ normal(mu_0_ctrl_post + ar1_beta*y_0_ctrl_pre[Npre,i], sigma_ctrl);
+    for (j in 2:Npost) {
+      y_0_ctrl_post[j,i] ~ normal(mu_0_ctrl_post + ar1_beta*y_0_ctrl_post[j-1,i], sigma_ctrl);
+    }
+  }
+  for (i in 1:Ntest){
+    for (j in 2:Npre) {
+      y_0_test_pre[j,i] ~ normal(mu_0_test_pre + ar1_beta*y_0_test_pre[j-1,i], sigma_test_pre);
+    }
+  }
+  for (i in 1:Ntest){
+    y_1_test_post[1,i] ~ normal(mu_1_test_post + ar1_beta*y_0_test_pre[Npre,i], sigma_test_post);
+    for (j in 2:Npost) {
+      y_1_test_post[j,i] ~ normal(mu_1_test_post + ar1_beta*y_1_test_post[j-1,i], sigma_test_post);
+    }
+  }
+  for (i in 1:Ntest) {
+    for (j in 2:Npost) {
+      y_0_test_post_miss[j,i] ~ normal(mu_0_test_post_miss + ar1_beta*y_0_test_post_miss[j-1,i], sigma_test_pre);
+    }
+  }
+  for (i in 1:Nctrl) {
+    for (j in 2:Npost) {
+      y_1_ctrl_post_miss[j,i] ~ normal(mu_1_ctrl_post_miss + ar1_beta*y_1_ctrl_post_miss[j-1,i], sigma_test_post);
+    }
+  }
+}
+"
+
+
+fit1 <- stan(model_code = stan_char_string, data = stan_data,
+             pars = c("mu_0_ctrl_pre","mu_0_test_pre", "mu_0_ctrl_post",
+                      "mu_1_test_post", "mu_0_test_post_miss",
+                      "mu_1_ctrl_post_miss",
+                      "y_0_test_post_miss",
+                      "y_1_ctrl_post_miss",
+                      "sigma_ctrl", "sigma_test_pre", "sigma_test_post",
+                      "ar1_beta"),
+             iter = 3000, warmup = 1000,
+             chains = 4, cores = 4, control = list(adapt_delta = 0.99))
+
+print(fit1, pars = c("mu_0_ctrl_pre","mu_0_test_pre", "mu_0_ctrl_post",
+                     "mu_1_test_post", "mu_0_test_post_miss",
+                     "mu_1_ctrl_post_miss",
+                     "sigma_ctrl", "sigma_test_pre", "sigma_test_post",
+                     "ar1_beta"))
+
+plot(fit1, pars = c("mu_0_ctrl_pre","mu_0_test_pre", "mu_0_ctrl_post",
+                    "mu_1_test_post", "mu_0_test_post_miss",
+                    "mu_1_ctrl_post_miss",
+                    "sigma_ctrl", "sigma_test_pre", "sigma_test_post"),
+     ci_level = 0.5, outer_level = 0.95)
+
+################################################################################
+
+create_ar1_cov_mat <- function(sigma, phi, n)
+{
+  Sigma <- matrix(NA, nrow = n, ncol = n)
+  Sigma[1,] <- phi^(0:(n - 1))
+  Sigma[n,] <- phi^((n - 1):0)
+  for (i in 2:(n - 1))
+  {
+    Sigma[i,] <- phi^c((i - 1):0, 1:(n - i))
+  }
+  Sigma <- Sigma * sigma^2 / (1 - phi^2)
+  return(Sigma)
+}
+
+create_ar1_prec_mat <- function(sigma, phi, n)
+{
+  Sigma <- matrix(0, nrow = n, ncol = n)
+  diag(Sigma) <- c(1, rep(1 + phi^2, n - 2), 1)
+  for (i in 1:(n - 1))
+  {
+    Sigma[i, i + 1] = -phi
+    Sigma[i + 1, i] = -phi
+  }
+  Sigma <- Sigma / sigma^2
+  return(Sigma)
+}
+
+temp <- create_ar1_cov_mat(2, 0.5, 4)
+zapsmall(solve(temp))
+temprec <- create_ar1_prec_mat(2, 0.5, 4)
+all.equal(zapsmall(solve(temp)), temprec)
+
+set.seed(1234)
+Npre <- 8
+Npost <- 16
+Nctrl <- 10
+Ntest <- 12
+y_0_ctrl_pre <- rnorm(Npre*Nctrl, 1, 1)
+y_0_ctrl_post <- rnorm(Npost*Nctrl, 2, 1)
+y_0_test_pre <- rnorm(Npre*Ntest, 0, 1)
+y_1_test_post <- rnorm(Npost*Ntest, 3, 1)
+
+set.seed(1000)
+y_0_ctrl_pre <- matrix(y_0_ctrl_pre, nrow = Npre, ncol = Nctrl)
+y_0_ctrl_post <- matrix(y_0_ctrl_post, nrow = Npost, ncol = Nctrl)
+y_0_test_pre <- matrix(y_0_test_pre, nrow = Npre, ncol = Ntest)
+y_1_test_post <- matrix(y_1_test_post, nrow = Npost, ncol = Ntest)
+ar1_beta <- 0.6
+
+for (i in 2:Npre)
+{
+  for (j in 1:Nctrl)
+  {
+    y_0_ctrl_pre[i, j] <- y_0_ctrl_pre[i - 1, j] * ar1_beta + rnorm(1, 1, 1)
+  }
+}
+for (i in 2:Npost)
+{
+  for (j in 1:Nctrl)
+  {
+    y_0_ctrl_post[i, j] <- y_0_ctrl_post[i - 1, j] * ar1_beta + rnorm(1, 2, 1)
+  }
+}
+for (i in 2:Npre)
+{
+  for (j in 1:Ntest)
+  {
+    y_0_test_pre[i, j] <- y_0_test_pre[i - 1, j] * ar1_beta + rnorm(1, 0, 1)
+  }
+}
+for (i in 2:Npost)
+{
+  for (j in 1:Ntest)
+  {
+    y_1_test_post[i, j] <- y_1_test_post[i - 1, j] * ar1_beta + rnorm(1, 3, 1)
+  }
+}
+
+stan_data <- list(
+  Npre = Npre,
+  Npost = Npost,
+  Nctrl = Nctrl,
+  Ntest = Ntest,
+  y_0_ctrl_pre = matrix(y_0_ctrl_pre, nrow = Npre, ncol = Nctrl),
+  y_0_ctrl_post = matrix(y_0_ctrl_post, nrow = Npost, ncol = Nctrl),
+  y_0_test_pre = matrix(y_0_test_pre, nrow = Npre, ncol = Ntest),
+  y_1_test_post = matrix(y_1_test_post, nrow = Npost, ncol = Ntest)
+)
+
+stan_char_string <- "
+functions {
+  matrix create_ar1_prec_mat(real sigma, real phi, int n) {
+    matrix[n,n] Sigma;
+
+    Sigma = diag_matrix(rep_vector(1 + phi*phi, n));
+    Sigma[1,1] = 1;
+    Sigma[n,n] = 1;
+    for (i in 1:(n - 1)) {
+      Sigma[i, i + 1] = -1 * phi;
+      Sigma[i + 1, i] = -1 * phi;
+    }
+    Sigma /= (sigma*sigma);
+    return Sigma;
+  }
+}
+data {
+  int<lower=1> Npre;
+  int<lower=1> Npost;
+  int<lower=1> Nctrl;
+  int<lower=1> Ntest;
+  matrix[Npre,Nctrl] y_0_ctrl_pre;
+  matrix[Npre,Ntest] y_0_test_pre;
+  matrix[Npost,Nctrl] y_0_ctrl_post;
+  matrix[Npost,Ntest] y_1_test_post;
+}
+parameters {
+  real mu_0_ctrl_pre;
+  real mu_0_test_pre;
+  real mu_0_ctrl_post;
+  real mu_1_test_post;
+  real<lower=0> sigma_ctrl;
+  real<lower=0> sigma_test_pre;
+  real<lower=0> sigma_test_post;
+  matrix[Npost,Ntest] y_0_test_post_miss;
+  matrix[Npost,Nctrl] y_1_ctrl_post_miss;
+  real<lower=-1, upper=1> ar1_phi;
+}
+transformed parameters {
+  vector[Npre] mu_0_ctrl_pre_vec;
+  vector[Npost] mu_0_ctrl_post_vec;
+  vector[Npre] mu_0_test_pre_vec;
+  vector[Npost] mu_1_test_post_vec;
+  real mu_0_test_post_miss;
+  real mu_1_ctrl_post_miss;
+  vector[Npost] mu_0_test_post_miss_vec;
+  vector[Npost] mu_1_ctrl_post_miss_vec;
+  matrix[Npre,Npre] Omega_0_ctrl_pre;
+  matrix[Npost,Npost] Omega_0_ctrl_post;
+  matrix[Npre,Npre] Omega_0_test_pre;
+  matrix[Npost,Npost] Omega_1_test_post;
+  matrix[Npost,Npost] Omega_0_test_post_miss;
+  matrix[Npost,Npost] Omega_1_ctrl_post_miss;
+
+  mu_0_ctrl_pre_vec = rep_vector(mu_0_ctrl_pre, Npre);
+  mu_0_ctrl_post_vec = rep_vector(mu_0_ctrl_post, Npost);
+  mu_0_test_pre_vec = rep_vector(mu_0_test_pre, Npre);
+  mu_1_test_post_vec = rep_vector(mu_1_test_post, Npost);
+
+  mu_0_test_post_miss = mu_0_test_pre + (mu_0_ctrl_post - mu_0_ctrl_pre);
+  mu_1_ctrl_post_miss = mu_0_ctrl_pre + (mu_1_test_post - mu_0_test_pre);
+  mu_0_test_post_miss_vec = rep_vector(mu_0_test_post_miss, Npost);
+  mu_1_ctrl_post_miss_vec = rep_vector(mu_1_ctrl_post_miss, Npost);
+
+  Omega_0_ctrl_pre = create_ar1_prec_mat(sigma_ctrl, ar1_phi, Npre);
+  Omega_0_ctrl_post = create_ar1_prec_mat(sigma_ctrl, ar1_phi, Npost);
+  Omega_0_test_pre = create_ar1_prec_mat(sigma_test_pre, ar1_phi, Npre);
+  Omega_1_test_post = create_ar1_prec_mat(sigma_test_post, ar1_phi, Npost);
+  Omega_0_test_post_miss = create_ar1_prec_mat(sigma_test_pre, ar1_phi, Npost);
+  Omega_1_ctrl_post_miss = create_ar1_prec_mat(sigma_test_post, ar1_phi, Npost);
+}
+model {
+  ar1_phi ~ uniform(-1, 1); // want a stationary phi between -1 and 1
+  // constant priors on others
+  for (i in 1:Nctrl) {
+    y_0_ctrl_pre[,i] ~ multi_normal_prec(mu_0_ctrl_pre_vec, Omega_0_ctrl_pre);
+  }
+  for (i in 1:Nctrl) {
+    y_0_ctrl_post[,i] ~ multi_normal_prec(mu_0_ctrl_post_vec, Omega_0_ctrl_post);
+  }
+  for (i in 1:Ntest) {
+    y_0_test_pre[,i] ~ multi_normal_prec(mu_0_test_pre_vec, Omega_0_test_pre);
+  }
+  for (i in 1:Ntest) {
+    y_1_test_post[,i] ~ multi_normal_prec(mu_1_test_post_vec, Omega_1_test_post);
+  }
+  for (i in 1:Ntest) {
+    y_0_test_post_miss[,i] ~ multi_normal_prec(mu_0_test_post_miss_vec, Omega_0_test_post_miss);
+  }
+  for (i in 1:Nctrl) {
+    y_1_ctrl_post_miss[,i] ~ multi_normal_prec(mu_1_ctrl_post_miss_vec, Omega_1_ctrl_post_miss);
+  }
+}
+"
+
+
+fit1 <- stan(model_code = stan_char_string, data = stan_data,
+             pars = c("mu_0_ctrl_pre","mu_0_test_pre", "mu_0_ctrl_post",
+                      "mu_1_test_post", "mu_0_test_post_miss",
+                      "mu_1_ctrl_post_miss",
+                      "y_0_test_post_miss",
+                      "y_1_ctrl_post_miss",
+                      "sigma_ctrl", "sigma_test_pre", "sigma_test_post",
+                      "ar1_beta"),
+             iter = 2000, warmup = 1000,
+             chains = 1, cores = 1, control = list(adapt_delta = 0.8))
+
+print(fit1, pars = c("mu_0_ctrl_pre","mu_0_test_pre", "mu_0_ctrl_post",
+                     "mu_1_test_post", "mu_0_test_post_miss",
+                     "mu_1_ctrl_post_miss",
+                     "sigma_ctrl", "sigma_test_pre", "sigma_test_post",
+                     "ar1_beta"))
+
+plot(fit1, pars = c("mu_0_ctrl_pre","mu_0_test_pre", "mu_0_ctrl_post",
+                    "mu_1_test_post", "mu_0_test_post_miss",
+                    "mu_1_ctrl_post_miss",
+                    "sigma_ctrl", "sigma_test_pre", "sigma_test_post"),
+     ci_level = 0.5, outer_level = 0.95)
+
