@@ -1,0 +1,56 @@
+---
+title: "Bayesian Causal Inference in Stan"
+author: "Rob Carnell"
+date: "June 14, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Common Types of Causal Inference Designs
+
+- **Observational** - The assignment of subjects to a treated or control group is outside
+the control of the researcher
+- **Randomized Control Trial** - Subjects are assigned randomly to a treatment or
+control group
+
+- **Prospective** - The study is designed before treatments are applied
+- **Retrospective** - The study is designed after the events have occurred
+
+- **Longitudinal** - The same study participants are observed through time
+
+- Cross Sectional - 
+- Panel or case-control - 
+
+## Notation
+
+Following the notation in *Ding and Li, 2018* [1](https://arxiv.org/pdf/1712.06170.pdf).  
+Let:
+
+- $w_i = 0$ indicate control and $w_i = 1$ indicate a treated unit
+- $\mathbf{W}$ is the `1 x N` vector of treatment indicators
+- $\mathbf{X}$ is the `N x p` matrix of covariates
+- Each unit has two potential outcomes $Y_i(0)$ and $Yi(1)$
+
+The Population Average Treatment Effect is $\tau^{PATE} = E(Y_i(1) - Y_i(0))$ and 
+the Sample Average Treatment Effect is $\tau^{SATE} = \frac{1}{N}\sum_{i=1}^N Y_i(1) - Y_i(0)$.
+
+Four quantities are associated with each unit i:
+
+- $Y_i(0)$ The outcome when $i$ is untreated
+- $Y_i(1)$ The outcome when $i$ is treated
+- $W_i$ the treated status of the unit
+- $X_i$ 
+
+only some outcomes are observed, $Y_i^{obs} = Y_i(W_i)$, $W_i$, and $X_i$, and 
+the others are missing $Y_i^{miss} = Y_i(1-W_i)$
+
+## Retrospective Observational Studies
+
+
+## Impact Analysis
+
+$y_{ctrl\ pre}(0)$, $y_{test\ pre}(0)$, $y_{ctrl\ post}(0)$, $y_{test\ post}(1)$, 
+$y_{test\ post}^{miss}(0)$

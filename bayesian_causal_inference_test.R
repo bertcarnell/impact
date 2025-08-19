@@ -840,19 +840,27 @@ fit1 <- stan(model_code = stan_char_string, data = stan_data,
                       "y_0_test_post_miss",
                       "y_1_ctrl_post_miss",
                       "sigma_ctrl", "sigma_test_pre", "sigma_test_post",
-                      "ar1_beta"),
+                      "ar1_phi"),
              iter = 2000, warmup = 1000,
-             chains = 1, cores = 1, control = list(adapt_delta = 0.8))
+             chains = 4, cores = 4, control = list(adapt_delta = 0.8))
 
 print(fit1, pars = c("mu_0_ctrl_pre","mu_0_test_pre", "mu_0_ctrl_post",
                      "mu_1_test_post", "mu_0_test_post_miss",
                      "mu_1_ctrl_post_miss",
                      "sigma_ctrl", "sigma_test_pre", "sigma_test_post",
-                     "ar1_beta"))
+                     "ar1_phi"))
 
 plot(fit1, pars = c("mu_0_ctrl_pre","mu_0_test_pre", "mu_0_ctrl_post",
                     "mu_1_test_post", "mu_0_test_post_miss",
                     "mu_1_ctrl_post_miss",
-                    "sigma_ctrl", "sigma_test_pre", "sigma_test_post"),
+                    "sigma_ctrl", "sigma_test_pre", "sigma_test_post",
+                    "ar1_phi"),
      ci_level = 0.5, outer_level = 0.95)
+
+plot(fit1, pars = c("mu_0_ctrl_pre","mu_0_test_pre", "mu_0_ctrl_post",
+                    "mu_1_test_post", "mu_0_test_post_miss",
+                    "mu_1_ctrl_post_miss",
+                    "sigma_ctrl", "sigma_test_pre", "sigma_test_post",
+                    "ar1_phi"),
+     plotfun = "trace")
 
